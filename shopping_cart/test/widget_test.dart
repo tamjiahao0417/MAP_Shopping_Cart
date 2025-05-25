@@ -1,30 +1,37 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:shopping_cart/main.dart';
+import 'package:provider/provider.dart';
+import 'package:shopping_cart/my_app.dart';
+import 'package:shopping_cart/cart_model.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Add item to cart test', (WidgetTester tester) async {
+    // Build the widget with a provider
+    await tester.pumpWidget(
+      ChangeNotifierProvider(
+        create: (_) => CartModel(),
+        child: const MyApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Wait for widget to settle
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    // Find the first Add button
+    final addButton = find.byIcon(Icons.add).first;
+    expect(addButton, findsOneWidget);
+
+    // Tap the Add button
+    await tester.tap(addButton);
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Navigate to cart
+    final cartButton = find.byIcon(Icons.shopping_cart);
+    expect(cartButton, findsOneWidget);
+    await tester.tap(cartButton);
+    await tester.pumpAndSettle();
+
+    // Check if the item was added to cart
+    expect(find.textContaining('Item'), findsOneWidget);
   });
 }
